@@ -13,6 +13,10 @@ export async function fetchTeamStats(teamId: string) {
 
   try {
     const response = await fetch(url, options);
+    if (!response.ok) {
+      console.warn(`RapidAPI responded with status: ${response.status}`);
+      return null;
+    }
     const data = await response.json();
     return data.statistics || null;
   } catch (error) {

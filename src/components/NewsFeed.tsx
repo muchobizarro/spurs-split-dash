@@ -16,6 +16,8 @@ interface Props {
 }
 
 export default function NewsFeed({ news }: Props) {
+  if (!news || !Array.isArray(news)) return null;
+
   const groupNews = (items: NewsItem[]) => {
     const today = new Date();
     const yesterday = new Date();
@@ -66,7 +68,7 @@ export default function NewsFeed({ news }: Props) {
                   href={item.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="group block p-3 bg-white/5 hover:bg-white/10 transition-colors border border-white/5"
+                  className="group block p-3 bg-current/5 hover:bg-current/10 transition-colors border border-current/10"
                 >
                   <div className="flex justify-between items-start gap-2 mb-1">
                     <span className="text-[10px] font-bold uppercase text-secondary">{item.source}</span>

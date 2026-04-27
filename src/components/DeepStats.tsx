@@ -33,7 +33,7 @@ export default function DeepStats({ stats, title }: Props) {
 
       <div className="grid grid-cols-2 gap-3">
         {metrics.map((m, i) => (
-          <div key={i} className="bg-white/5 border border-white/5 p-4 flex flex-col gap-1">
+          <div key={i} className="bg-current/5 border border-current/10 p-4 flex flex-col gap-1">
             <div className="flex items-center gap-2 opacity-50">
               <m.icon size={14} />
               <span className="text-[10px] font-bold uppercase tracking-wider">{m.label}</span>

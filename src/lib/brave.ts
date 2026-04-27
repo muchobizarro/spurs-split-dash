@@ -12,7 +12,10 @@ export async function fetchBraveNews() {
     }
   );
 
-  if (!response.ok) return [];
+  if (!response.ok) {
+    console.warn(`Brave API responded with status: ${response.status}`);
+    return [];
+  }
 
   const data = await response.json();
   return data.results || [];

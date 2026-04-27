@@ -30,7 +30,7 @@ export default async function DashboardPage() {
         {/* Men's Side - Spurs Navy */}
         <section className="bg-[#132257] p-6 lg:p-12 space-y-12 border-r border-white/5">
           <header className="space-y-2">
-            <h1 className="text-6-xl font-black italic uppercase tracking-tighter leading-none">
+            <h1 className="text-6xl font-black italic uppercase tracking-tighter leading-none">
               Spurs <span className="block text-white/20">Men</span>
             </h1>
             <div className="h-2 w-24 bg-white" />
@@ -45,7 +45,7 @@ export default async function DashboardPage() {
         {/* Women's Side - Lilywhite */}
         <section className="bg-[#FFFFFF] text-[#132257] p-6 lg:p-12 space-y-12">
           <header className="space-y-2">
-            <h1 className="text-6-xl font-black italic uppercase tracking-tighter leading-none">
+            <h1 className="text-6xl font-black italic uppercase tracking-tighter leading-none">
               Spurs <span className="block text-[#132257]/20">Women</span>
             </h1>
             <div className="h-2 w-24 bg-[#132257]" />

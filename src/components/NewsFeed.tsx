@@ -26,10 +26,19 @@ export default function NewsFeed({ news }: Props) {
     const groups: { [key: string]: NewsItem[] } = {
       Today: [],
       Yesterday: [],
+      Recent: [],
     };
 
-    items.forEach((item) => {
-      const pubDate = new Date(item.published_time);
+    items.forEach((item: any) => {
+      const time = item.published_time || item.age;
+      const pubDate = new Date(time);
+      const isValidDate = !isNaN(pubDate.getTime());
+      
+      if (!isValidDate) {
+        groups.Recent.push(item);
+        return;
+      }
+
       const diffDays = Math.floor((today.getTime() - pubDate.getTime()) / (1000 * 3600 * 24));
 
       if (pubDate.toDateString() === today.toDateString()) {
@@ -40,6 +49,8 @@ export default function NewsFeed({ news }: Props) {
         const dayName = pubDate.toLocaleDateString('en-US', { weekday: 'long' });
         if (!groups[dayName]) groups[dayName] = [];
         groups[dayName].push(item);
+      } else {
+        groups.Recent.push(item);
       }
     });
 
@@ -74,7 +85,13 @@ export default function NewsFeed({ news }: Props) {
                     <span className="text-[10px] font-bold uppercase text-secondary">{item.source}</span>
                     <div className="flex items-center gap-1 text-[10px] opacity-50">
                       <Clock size={10} />
-                      {new Date(item.published_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      {(() => {
+                        const time = item.published_time || (item as any).age;
+                        const date = new Date(time);
+                        return isNaN(date.getTime()) 
+                          ? time 
+                          : date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                      })()}
                     </div>
                   </div>
                   <h4 className="text-sm font-bold leading-tight group-hover:underline">{item.title}</h4>

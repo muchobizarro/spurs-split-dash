@@ -18,5 +18,11 @@ export async function fetchBraveNews() {
   }
 
   const data = await response.json();
-  return data.results || [];
+  return (data.results || []).map((item: any) => ({
+    title: item.title,
+    url: item.url,
+    description: item.description,
+    published_time: item.age,
+    source: item.source || item.meta_url?.name || 'Brave News',
+  }));
 }

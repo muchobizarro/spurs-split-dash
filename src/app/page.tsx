@@ -8,13 +8,14 @@ import { AlertTriangle, Zap } from 'lucide-react';
 
 export default async function DashboardPage() {
   // Fetch data with governance
-  const { data: news, isStale: isNewsStale } = await fetchWithGovernance('brave_news_spurs', fetchBraveNews);
+  const { data: menNews, isStale: isMenNewsStale } = await fetchWithGovernance('brave_news_men', () => fetchBraveNews('Tottenham Hotspur'));
+  const { data: womenNews, isStale: isWomenNewsStale } = await fetchWithGovernance('brave_news_women', () => fetchBraveNews('Tottenham Hotspur Women'));
   
   // Example Team IDs for Spurs Men (33) and Women (4944)
   const { data: menStats, isStale: isMenStale } = await fetchWithGovernance('men_stats', () => fetchTeamStats('33'));
   const { data: womenStats, isStale: isWomenStale } = await fetchWithGovernance('women_stats', () => fetchTeamStats('4944'));
 
-  const isDataSavingMode = isNewsStale || isMenStale || isWomenStale;
+  const isDataSavingMode = isMenNewsStale || isWomenNewsStale || isMenStale || isWomenStale;
 
   return (
     <main className="min-h-screen bg-black text-white font-sans">
@@ -38,7 +39,7 @@ export default async function DashboardPage() {
 
           <div className="grid gap-12">
             <DeepStats stats={menStats} title="Men's First Team" />
-            <NewsFeed news={news} />
+            <NewsFeed news={menNews} />
           </div>
         </section>
 
@@ -53,7 +54,7 @@ export default async function DashboardPage() {
 
           <div className="grid gap-12">
             <DeepStats stats={womenStats} title="Women's Team" />
-            <NewsFeed news={news} />
+            <NewsFeed news={womenNews} />
           </div>
         </section>
       </div>

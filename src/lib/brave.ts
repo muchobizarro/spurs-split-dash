@@ -1,9 +1,10 @@
-export async function fetchBraveNews() {
+export async function fetchBraveNews(query: string = 'Tottenham Hotspur') {
   const apiKey = process.env.BRAVE_API_KEY;
   if (!apiKey) return [];
 
+  const encodedQuery = encodeURIComponent(query);
   const response = await fetch(
-    'https://api.search.brave.com/res/v1/news/search?q=Tottenham+Hotspur',
+    `https://api.search.brave.com/res/v1/news/search?q=${encodedQuery}`,
     {
       headers: {
         'Accept': 'application/json',

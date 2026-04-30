@@ -81,8 +81,7 @@ export default function NewsFeed({ news }: Props) {
                   rel="noopener noreferrer"
                   className="group block p-3 bg-current/5 hover:bg-current/10 transition-colors border border-current/10"
                 >
-                  <div className="flex justify-between items-start gap-2 mb-1">
-                    <span className="text-[10px] font-bold uppercase text-secondary">{item.source}</span>
+                  <div className="flex justify-end items-start gap-2 mb-1">
                     <div className="flex items-center gap-1 text-[10px] opacity-50">
                       <Clock size={10} />
                       {(() => {

@@ -66,10 +66,38 @@ async function fetchFromApi(endpoint: string) {
 }
 
 export async function fetchNextMatch(teamId: string): Promise<Fixture | null> {
-  const data = await fetchFromApi(`fixtures?team=${teamId}&next=1`);
-  const fixture = data?.response?.[0];
-  if (!fixture) return null;
+  const correctedTeamId = teamId === '33' ? '47' : teamId === '4944' ? '4899' : teamId;
+  
+  const data = await fetchFromApi(`fixtures?team=${correctedTeamId}&next=1`);
+  
+  if (data?.errors?.plan || !data?.response?.[0]) {
+    const seasons = ['2025', '2024'];
+    for (const season of seasons) {
+      const seasonData = await fetchFromApi(`fixtures?team=${correctedTeamId}&season=${season}`);
+      if (seasonData?.errors?.plan || !seasonData?.response) continue;
+      
+      const fixtures = seasonData?.response || [];
+      const now = new Date().getTime();
+      const next = fixtures
+        .filter((f: any) => new Date(f.fixture.date).getTime() > now)
+        .sort((a: any, b: any) => new Date(a.fixture.date).getTime() - new Date(b.fixture.date).getTime())[0];
+        
+      if (next) {
+        return {
+          id: next.fixture.id,
+          date: next.fixture.date,
+          venue: next.fixture.venue,
+          status: next.fixture.status,
+          homeTeam: next.teams.home,
+          awayTeam: next.teams.away,
+          goals: next.goals
+        };
+      }
+    }
+    return null;
+  }
 
+  const fixture = data.response[0];
   return {
     id: fixture.fixture.id,
     date: fixture.fixture.date,
@@ -82,10 +110,38 @@ export async function fetchNextMatch(teamId: string): Promise<Fixture | null> {
 }
 
 export async function fetchLastMatch(teamId: string): Promise<Fixture | null> {
-  const data = await fetchFromApi(`fixtures?team=${teamId}&last=1`);
-  const fixture = data?.response?.[0];
-  if (!fixture) return null;
+  const correctedTeamId = teamId === '33' ? '47' : teamId === '4944' ? '4899' : teamId;
+  
+  const data = await fetchFromApi(`fixtures?team=${correctedTeamId}&last=1`);
+  
+  if (data?.errors?.plan || !data?.response?.[0]) {
+    const seasons = ['2025', '2024'];
+    for (const season of seasons) {
+      const seasonData = await fetchFromApi(`fixtures?team=${correctedTeamId}&season=${season}`);
+      if (seasonData?.errors?.plan || !seasonData?.response) continue;
+      
+      const fixtures = seasonData?.response || [];
+      const now = new Date().getTime();
+      const last = fixtures
+        .filter((f: any) => new Date(f.fixture.date).getTime() < now)
+        .sort((a: any, b: any) => new Date(b.fixture.date).getTime() - new Date(a.fixture.date).getTime())[0];
+        
+      if (last) {
+        return {
+          id: last.fixture.id,
+          date: last.fixture.date,
+          venue: last.fixture.venue,
+          status: last.fixture.status,
+          homeTeam: last.teams.home,
+          awayTeam: last.teams.away,
+          goals: last.goals
+        };
+      }
+    }
+    return null;
+  }
 
+  const fixture = data.response[0];
   return {
     id: fixture.fixture.id,
     date: fixture.fixture.date,
@@ -98,17 +154,20 @@ export async function fetchLastMatch(teamId: string): Promise<Fixture | null> {
 }
 
 export async function fetchStandings(teamId: string): Promise<Standing | null> {
-  // We need to fetch standings for the league the team is in.
-  // For Spurs Men (33), it's Premier League (39)
-  // For Spurs Women (4944), it's WSL (144)
-  const leagueId = teamId === '33' ? '39' : '144';
-  const season = '2025'; // Current season
+  const correctedTeamId = teamId === '33' ? '47' : teamId === '4944' ? '4899' : teamId;
+  const leagueId = correctedTeamId === '47' ? '39' : '44';
   
-  const data = await fetchFromApi(`standings?league=${leagueId}&season=${season}`);
-  const standings = data?.response?.[0]?.league?.standings?.[0];
+  const seasons = ['2025', '2024'];
+  for (const season of seasons) {
+    const data = await fetchFromApi(`standings?league=${leagueId}&season=${season}`);
+    if (data?.errors?.plan) continue;
+    
+    const standings = data?.response?.[0]?.league?.standings?.[0];
+    if (!standings) continue;
+    
+    const teamStanding = standings.find((s: any) => s.team.id.toString() === correctedTeamId);
+    if (teamStanding) return teamStanding;
+  }
   
-  if (!standings) return null;
-  
-  const teamStanding = standings.find((s: { team: { id: number } }) => s.team.id.toString() === teamId);
-  return teamStanding || null;
+  return null;
 }

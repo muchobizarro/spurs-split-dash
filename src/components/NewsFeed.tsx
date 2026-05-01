@@ -18,6 +18,21 @@ interface Props {
 export default function NewsFeed({ news }: Props) {
   if (!news || !Array.isArray(news)) return null;
 
+  // 1. Sort all news items by date (newest first)
+  const sortedNews = [...news].sort((a, b) => {
+    const dateA = new Date(a.published_time).getTime();
+    const dateB = new Date(b.published_time).getTime();
+    
+    // Handle invalid dates by pushing them to the end
+    const isValidA = !isNaN(dateA);
+    const isValidB = !isNaN(dateB);
+    if (!isValidA && !isValidB) return 0;
+    if (!isValidA) return 1;
+    if (!isValidB) return -1;
+    
+    return dateB - dateA;
+  });
+
   const groupNews = (items: NewsItem[]) => {
     const today = new Date();
     const yesterday = new Date();
@@ -26,7 +41,6 @@ export default function NewsFeed({ news }: Props) {
     const groups: { [key: string]: NewsItem[] } = {
       Today: [],
       Yesterday: [],
-      Recent: [],
     };
 
     items.forEach((item: NewsItem) => {
@@ -35,6 +49,7 @@ export default function NewsFeed({ news }: Props) {
       const isValidDate = !isNaN(pubDate.getTime());
       
       if (!isValidDate) {
+        if (!groups.Recent) groups.Recent = [];
         groups.Recent.push(item);
         return;
       }
@@ -50,6 +65,7 @@ export default function NewsFeed({ news }: Props) {
         if (!groups[dayName]) groups[dayName] = [];
         groups[dayName].push(item);
       } else {
+        if (!groups.Recent) groups.Recent = [];
         groups.Recent.push(item);
       }
     });
@@ -57,7 +73,25 @@ export default function NewsFeed({ news }: Props) {
     return groups;
   };
 
-  const grouped = groupNews(news);
+  const grouped = groupNews(sortedNews);
+
+  // Define display order for groups to maintain chronology
+  const getOrderedGroups = () => {
+    const today = new Date();
+    const order = ['Today', 'Yesterday'];
+    
+    // Add the last 5 days of the week in order
+    for (let i = 2; i < 7; i++) {
+      const d = new Date();
+      d.setDate(today.getDate() - i);
+      order.push(d.toLocaleDateString('en-US', { weekday: 'long' }));
+    }
+    
+    order.push('Recent');
+    return order;
+  };
+
+  const displayOrder = getOrderedGroups();
 
   return (
     <div className="space-y-6">
@@ -66,8 +100,11 @@ export default function NewsFeed({ news }: Props) {
         <h2 className="text-xl font-bold uppercase tracking-tight">Latest News</h2>
       </div>
 
-      {Object.entries(grouped).map(([day, items]) => (
-        items.length > 0 && (
+      {displayOrder.map((day) => {
+        const items = grouped[day];
+        if (!items || items.length === 0) return null;
+
+        return (
           <div key={day} className="space-y-3">
             <h3 className="text-xs font-black uppercase tracking-widest text-opacity-50 border-b border-current pb-1">
               {day}
@@ -98,8 +135,8 @@ export default function NewsFeed({ news }: Props) {
               ))}
             </div>
           </div>
-        )
-      ))}
+        );
+      })}
     </div>
   );
 }

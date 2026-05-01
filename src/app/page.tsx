@@ -18,24 +18,34 @@ const WSL_LEAGUE_ID = '44';
 
 async function fetchFromApiSports(endpoint: string) {
   const apiKey = process.env.API_FOOTBALL_KEY;
-  if (!apiKey) return null;
+  if (!apiKey) {
+    console.error('API_FOOTBALL_KEY is missing!');
+    return null;
+  }
   const url = `https://v3.football.api-sports.io/${endpoint}`;
   try {
     const response = await fetch(url, { headers: { 'x-apisports-key': apiKey } });
-    return response.ok ? await response.json() : null;
+    if (!response.ok) {
+      console.error(`API-Football Error: ${response.status} ${response.statusText}`);
+      return null;
+    }
+    const data = await response.json();
+    if (data.errors && Object.keys(data.errors).length > 0) {
+      console.error('API-Football API Errors:', JSON.stringify(data.errors));
+    }
+    return data;
   } catch (error) {
-    console.error('API-Football Error:', error);
+    console.error('API-Football Fetch Error:', error);
     return null;
   }
 }
 
 async function fetchDirectMatch(teamId: string, type: 'next' | 'last') {
   const data = await fetchFromApiSports(`fixtures?team=${teamId}&${type}=1`);
-  if (data?.errors?.plan || !data?.response?.[0]) {
-    // Fallback: Fetch all fixtures for 2025 then 2024
+  if (!data?.response?.[0] || data?.errors?.plan) {
     for (const season of ['2025', '2024']) {
       const sData = await fetchFromApiSports(`fixtures?team=${teamId}&season=${season}`);
-      if (sData?.errors?.plan || !sData?.response) continue;
+      if (!sData?.response || sData?.errors?.plan) continue;
       const now = Date.now();
       const fixtures = sData.response.map((f: any) => ({
         id: f.fixture.id, date: f.fixture.date, venue: f.fixture.venue,
@@ -64,8 +74,9 @@ async function fetchDirectStanding(teamId: string) {
   const leagueId = teamId === SPURS_MEN_ID ? PL_LEAGUE_ID : WSL_LEAGUE_ID;
   for (const season of ['2025', '2024']) {
     const data = await fetchFromApiSports(`standings?league=${leagueId}&season=${season}`);
-    if (data?.errors?.plan || !data?.response?.[0]) continue;
-    const standing = data.response[0].league.standings[0].find((s: any) => s.team.id.toString() === teamId);
+    if (!data?.response?.[0] || data?.errors?.plan) continue;
+    const standings = data.response[0].league.standings[0];
+    const standing = standings.find((s: any) => s.team.id.toString() === teamId);
     if (standing) return standing;
   }
   return null;
@@ -74,7 +85,6 @@ async function fetchDirectStanding(teamId: string) {
 async function fetchDirectStats(teamId: string) {
   const apiKey = process.env.RAPID_API_KEY;
   if (!apiKey) return null;
-  // Use current season/endpoint or fallback
   const url = `https://sportapi7.p.rapidapi.com/api/v1/team/${teamId}/statistics/season/61627`;
   try {
     const response = await fetch(url, {
@@ -91,25 +101,25 @@ export default async function DashboardPage() {
   const { data: womenNews, isStale: isWomenNewsStale } = await fetchWithGovernance('brave_news_women', () => fetchBraveNews('Tottenham Hotspur Women'), 'news');
   
   // 2. Fetch Stats
-  const { data: menStats, isStale: isMenStale } = await fetchWithGovernance('men_stats_v3', () => fetchDirectStats(SPURS_MEN_ID));
-  const { data: womenStats, isStale: isWomenStale } = await fetchWithGovernance('women_stats_v3', () => fetchDirectStats(SPURS_WOMEN_ID));
+  const { data: menStats, isStale: isMenStale } = await fetchWithGovernance('men_stats_v4', () => fetchDirectStats(SPURS_MEN_ID));
+  const { data: womenStats, isStale: isWomenStale } = await fetchWithGovernance('women_stats_v4', () => fetchDirectStats(SPURS_WOMEN_ID));
 
   // 3. Fetch Matches
-  let { data: menMatch } = await fetchWithGovernance('men_match_v3', () => fetchDirectMatch(SPURS_MEN_ID, 'next'), 'news');
+  let { data: menMatch } = await fetchWithGovernance('men_match_v4', () => fetchDirectMatch(SPURS_MEN_ID, 'next'), 'news');
   if (!menMatch) {
-    const res = await fetchWithGovernance('last_men_match_v3', () => fetchDirectMatch(SPURS_MEN_ID, 'last'), 'news');
+    const res = await fetchWithGovernance('last_men_match_v4', () => fetchDirectMatch(SPURS_MEN_ID, 'last'), 'news');
     menMatch = res.data;
   }
 
-  let { data: womenMatch } = await fetchWithGovernance('women_match_v3', () => fetchDirectMatch(SPURS_WOMEN_ID, 'next'), 'news');
+  let { data: womenMatch } = await fetchWithGovernance('women_match_v4', () => fetchDirectMatch(SPURS_WOMEN_ID, 'next'), 'news');
   if (!womenMatch) {
-    const res = await fetchWithGovernance('last_women_match_v3', () => fetchDirectMatch(SPURS_WOMEN_ID, 'last'), 'news');
+    const res = await fetchWithGovernance('last_women_match_v4', () => fetchDirectMatch(SPURS_WOMEN_ID, 'last'), 'news');
     womenMatch = res.data;
   }
 
   // 4. Fetch Standings
-  const { data: menStanding } = await fetchWithGovernance('men_standing_v3', () => fetchDirectStanding(SPURS_MEN_ID), 'news');
-  const { data: womenStanding } = await fetchWithGovernance('women_standing_v3', () => fetchDirectStanding(SPURS_WOMEN_ID), 'news');
+  const { data: menStanding } = await fetchWithGovernance('men_standing_v4', () => fetchDirectStanding(SPURS_MEN_ID), 'news');
+  const { data: womenStanding } = await fetchWithGovernance('women_standing_v4', () => fetchDirectStanding(SPURS_WOMEN_ID), 'news');
 
   const isDataSavingMode = isMenNewsStale || isWomenNewsStale || isMenStale || isWomenStale;
 

@@ -169,7 +169,7 @@ export async function fetchLastMatch(teamId: string): Promise<Fixture | null> {
 
 export async function fetchStandings(teamId: string): Promise<Standing | null> {
   const correctedTeamId = teamId === '33' ? '47' : teamId === '4944' ? '4899' : teamId;
-  const leagueId = correctedTeamId === '47' ? '39' : '34';
+  const leagueId = correctedTeamId === '47' ? '39' : '38';
   
   const seasons = ['2025', '2024'];
   for (const season of seasons) {

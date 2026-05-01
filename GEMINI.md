@@ -18,7 +18,7 @@ Initial plans often reference incorrect IDs. Use these verified values:
 
 **API-Football (api-sports.io):**
 - **Spurs Men:** Team ID `47`, League ID `39` (Premier League)
-- **Spurs Women:** Team ID `4899`, League ID `34` (FA WSL)
+- **Spurs Women:** Team ID `4899`, League ID `38` (FA WSL)
 
 **SportAPI7 (RapidAPI / SofaScore):**
 - **Spurs Men:** Team ID `33`, Season ID `66441` (PL 25/26)

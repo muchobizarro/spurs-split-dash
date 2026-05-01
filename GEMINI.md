@@ -11,6 +11,19 @@ This project is a high-performance, dual-view dashboard for Tottenham Hotspur, p
     - **Data Aggregation:** Integrates API-Football, Brave Search API (News), and SportAPI7 (via RapidAPI) for deep analytics.
 - **UI Architecture:** A 50/50 vertical split on desktop (Men Left in "Spurs Navy" / Women Right in "Lilywhite"). Icons are powered by `lucide-react`.
 
+## Critical Findings & Data IDs
+
+### Correct Team & League IDs
+Initial plans often reference incorrect IDs. Use these verified values:
+- **Spurs Men:** Team ID `47`, League ID `39` (Premier League)
+- **Spurs Women:** Team ID `4899`, League ID `44` (FA WSL)
+
+### API Plan Restrictions (API-Football)
+The Free plan has significant limitations that require manual workarounds:
+1. **Blocked Parameters:** The `next` and `last` fixture parameters are often blocked.
+2. **Season Access:** The current season (e.g., 2025) may be restricted, requiring fallbacks to 2024.
+3. **Workaround:** Always fetch the full season fixtures and filter locally by date (`new Date()`) to find the next/last match. This logic is implemented directly in `src/app/page.tsx` due to library permission restrictions.
+
 ## Building and Running
 
 ### Prerequisites
@@ -24,7 +37,7 @@ This project is a high-performance, dual-view dashboard for Tottenham Hotspur, p
 - `npm run lint`: Runs ESLint for code quality checks.
 
 ### Environment Variables
-The following keys are required in `.env.local`:
+The following keys are required in both `.env.local` and Vercel:
 - `NEXT_PUBLIC_SUPABASE_URL`
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
 - `API_FOOTBALL_KEY`

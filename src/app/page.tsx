@@ -12,7 +12,7 @@ import { AlertTriangle, Zap } from 'lucide-react';
 export const revalidate = 3600; // Revalidate page every hour
 
 const SPURS_MEN_ID = '47';
-const SPURS_WOMEN_ID = '4899';
+const SPURS_WOMEN_ID = '150';
 
 export default async function DashboardPage() {
   // 1. Fetch News

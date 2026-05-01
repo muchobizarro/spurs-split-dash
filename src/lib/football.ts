@@ -80,7 +80,8 @@ interface ApiFixture {
 }
 
 export async function fetchNextMatch(teamId: string): Promise<Fixture | null> {
-  const correctedTeamId = teamId === '33' ? '47' : teamId === '4944' ? '4899' : teamId;
+  const correctedTeamId = teamId === '33' || teamId === '47' ? '47' : 
+                         teamId === '4944' || teamId === '4899' || teamId === '150' ? '150' : teamId;
   
   const data = await fetchFromApi(`fixtures?team=${correctedTeamId}&next=1`);
   
@@ -124,7 +125,8 @@ export async function fetchNextMatch(teamId: string): Promise<Fixture | null> {
 }
 
 export async function fetchLastMatch(teamId: string): Promise<Fixture | null> {
-  const correctedTeamId = teamId === '33' ? '47' : teamId === '4944' ? '4899' : teamId;
+  const correctedTeamId = teamId === '33' || teamId === '47' ? '47' : 
+                         teamId === '4944' || teamId === '4899' || teamId === '150' ? '150' : teamId;
   
   const data = await fetchFromApi(`fixtures?team=${correctedTeamId}&last=1`);
   
@@ -168,7 +170,8 @@ export async function fetchLastMatch(teamId: string): Promise<Fixture | null> {
 }
 
 export async function fetchStandings(teamId: string): Promise<Standing | null> {
-  const correctedTeamId = teamId === '33' ? '47' : teamId === '4944' ? '4899' : teamId;
+  const correctedTeamId = teamId === '33' || teamId === '47' ? '47' : 
+                         teamId === '4944' || teamId === '4899' || teamId === '150' ? '150' : teamId;
   const leagueId = correctedTeamId === '47' ? '39' : '38';
   
   const seasons = ['2025', '2024'];

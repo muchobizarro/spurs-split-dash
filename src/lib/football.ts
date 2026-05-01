@@ -85,13 +85,13 @@ export async function fetchNextMatch(teamId: string): Promise<Fixture | null> {
   
   const data = await fetchFromApi(`fixtures?team=${correctedTeamId}&next=1`);
   
-  if (data?.errors?.plan || !data?.response?.[0]) {
+  if (!data?.response?.[0] || data?.errors?.plan) {
     const seasons = ['2025', '2024'];
     for (const season of seasons) {
       const seasonData = await fetchFromApi(`fixtures?team=${correctedTeamId}&season=${season}`);
-      if (seasonData?.errors?.plan || !seasonData?.response) continue;
+      if (!seasonData?.response || seasonData?.errors?.plan) continue;
       
-      const fixturesResponse: ApiFixture[] = seasonData?.response || [];
+      const fixturesResponse: ApiFixture[] = seasonData.response;
       const now = new Date().getTime();
       const fixtures: Fixture[] = fixturesResponse.map((f) => ({
         id: f.fixture.id,
@@ -130,13 +130,13 @@ export async function fetchLastMatch(teamId: string): Promise<Fixture | null> {
   
   const data = await fetchFromApi(`fixtures?team=${correctedTeamId}&last=1`);
   
-  if (data?.errors?.plan || !data?.response?.[0]) {
+  if (!data?.response?.[0] || data?.errors?.plan) {
     const seasons = ['2025', '2024'];
     for (const season of seasons) {
       const seasonData = await fetchFromApi(`fixtures?team=${correctedTeamId}&season=${season}`);
-      if (seasonData?.errors?.plan || !seasonData?.response) continue;
+      if (!seasonData?.response || seasonData?.errors?.plan) continue;
       
-      const fixturesResponse: ApiFixture[] = seasonData?.response || [];
+      const fixturesResponse: ApiFixture[] = seasonData.response;
       const now = new Date().getTime();
       const fixtures: Fixture[] = fixturesResponse.map((f) => ({
         id: f.fixture.id,
@@ -177,13 +177,15 @@ export async function fetchStandings(teamId: string): Promise<Standing | null> {
   const seasons = ['2025', '2024', '2023'];
   for (const season of seasons) {
     const data = await fetchFromApi(`standings?league=${leagueId}&season=${season}`);
-    if (data?.errors?.plan) continue;
     
-    const standings = data?.response?.[0]?.league?.standings?.[0];
-    if (!standings) continue;
+    // If we got a valid response with standings, return the team's standing
+    if (data && data.response && data.response[0] && data.response[0].league && data.response[0].league.standings) {
+      const standings = data.response[0].league.standings[0];
+      const teamStanding = standings.find((s: { team: { id: number } }) => s.team.id.toString() === correctedTeamId);
+      if (teamStanding) return teamStanding;
+    }
     
-    const teamStanding = standings.find((s: { team: { id: number } }) => s.team.id.toString() === correctedTeamId);
-    if (teamStanding) return teamStanding;
+    // Otherwise, continue to the next season (handles null, plan errors, etc.)
   }
   
   return null;

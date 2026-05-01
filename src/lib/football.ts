@@ -49,8 +49,7 @@ async function fetchFromApi(endpoint: string) {
   try {
     const response = await fetch(url, {
       headers: {
-        'x-apisports-key': apiKey,
-        'x-apisports-host': 'v3.football.api-sports.io'
+        'x-apisports-key': apiKey
       }
     });
 

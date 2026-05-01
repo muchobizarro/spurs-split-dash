@@ -5,16 +5,17 @@ import NextMatch from '@/components/NextMatch';
 import Scoreboard from '@/components/Scoreboard';
 import { fetchWithGovernance } from '@/lib/governance';
 import { fetchBraveNews } from '@/lib/brave';
+import { Fixture } from '@/lib/football';
 import { AlertTriangle, Zap } from 'lucide-react';
 
-export const revalidate = 0; // FORCE FRESH DATA FOR DEBUGGING
+export const revalidate = 3600; // Revalidate page every hour
 
 // --- DIRECT FIX: Bypassing restricted football.ts and rapidapi.ts ---
 
 const SPURS_MEN_ID = '47';
 const SPURS_WOMEN_ID = '4899';
 const PL_LEAGUE_ID = '39';
-const WSL_LEAGUE_ID = '44';
+const WSL_LEAGUE_ID = '34';
 
 async function fetchFromApiSports(endpoint: string) {
   const apiKey = process.env.API_FOOTBALL_KEY;
@@ -40,24 +41,28 @@ async function fetchFromApiSports(endpoint: string) {
   }
 }
 
-async function fetchDirectMatch(teamId: string, type: 'next' | 'last') {
+async function fetchDirectMatch(teamId: string, type: 'next' | 'last'): Promise<Fixture | null> {
   const data = await fetchFromApiSports(`fixtures?team=${teamId}&${type}=1`);
   if (!data?.response?.[0] || data?.errors?.plan) {
     for (const season of ['2025', '2024']) {
       const sData = await fetchFromApiSports(`fixtures?team=${teamId}&season=${season}`);
       if (!sData?.response || sData?.errors?.plan) continue;
       const now = Date.now();
-      const fixtures = sData.response.map((f: any) => ({
+      const fixtures: Fixture[] = sData.response.map((f: { 
+        fixture: { id: number; date: string; venue: { name: string; city: string }; status: { long: string; short: string; elapsed: number | null } };
+        teams: { home: { name: string; logo: string; winner: boolean | null }; away: { name: string; logo: string; winner: boolean | null } };
+        goals: { home: number | null; away: number | null };
+      }) => ({
         id: f.fixture.id, date: f.fixture.date, venue: f.fixture.venue,
         status: f.fixture.status, homeTeam: f.teams.home, awayTeam: f.teams.away, goals: f.goals
       }));
       if (type === 'next') {
-        const next = fixtures.filter((f: any) => new Date(f.date).getTime() > now)
-          .sort((a: any, b: any) => new Date(a.date).getTime() - new Date(b.date).getTime())[0];
+        const next = fixtures.filter((f) => new Date(f.date).getTime() > now)
+          .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())[0];
         if (next) return next;
       } else {
-        const last = fixtures.filter((f: any) => new Date(f.date).getTime() < now)
-          .sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime())[0];
+        const last = fixtures.filter((f) => new Date(f.date).getTime() < now)
+          .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0];
         if (last) return last;
       }
     }
@@ -76,7 +81,7 @@ async function fetchDirectStanding(teamId: string) {
     const data = await fetchFromApiSports(`standings?league=${leagueId}&season=${season}`);
     if (!data?.response?.[0] || data?.errors?.plan) continue;
     const standings = data.response[0].league.standings[0];
-    const standing = standings.find((s: any) => s.team.id.toString() === teamId);
+    const standing = standings.find((s: { team: { id: number } }) => s.team.id.toString() === teamId);
     if (standing) return standing;
   }
   return null;

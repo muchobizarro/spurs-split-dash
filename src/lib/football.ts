@@ -65,6 +65,20 @@ async function fetchFromApi(endpoint: string) {
   }
 }
 
+interface ApiFixture {
+  fixture: {
+    id: number;
+    date: string;
+    venue: { name: string; city: string };
+    status: { long: string; short: string; elapsed: number | null };
+  };
+  teams: {
+    home: { name: string; logo: string; winner: boolean | null };
+    away: { name: string; logo: string; winner: boolean | null };
+  };
+  goals: { home: number | null; away: number | null };
+}
+
 export async function fetchNextMatch(teamId: string): Promise<Fixture | null> {
   const correctedTeamId = teamId === '33' ? '47' : teamId === '4944' ? '4899' : teamId;
   
@@ -76,23 +90,23 @@ export async function fetchNextMatch(teamId: string): Promise<Fixture | null> {
       const seasonData = await fetchFromApi(`fixtures?team=${correctedTeamId}&season=${season}`);
       if (seasonData?.errors?.plan || !seasonData?.response) continue;
       
-      const fixtures = seasonData?.response || [];
+      const fixturesResponse: ApiFixture[] = seasonData?.response || [];
       const now = new Date().getTime();
+      const fixtures: Fixture[] = fixturesResponse.map((f) => ({
+        id: f.fixture.id,
+        date: f.fixture.date,
+        venue: f.fixture.venue,
+        status: f.fixture.status,
+        homeTeam: f.teams.home,
+        awayTeam: f.teams.away,
+        goals: f.goals
+      }));
+
       const next = fixtures
-        .filter((f: any) => new Date(f.fixture.date).getTime() > now)
-        .sort((a: any, b: any) => new Date(a.fixture.date).getTime() - new Date(b.fixture.date).getTime())[0];
+        .filter((f) => new Date(f.date).getTime() > now)
+        .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())[0];
         
-      if (next) {
-        return {
-          id: next.fixture.id,
-          date: next.fixture.date,
-          venue: next.fixture.venue,
-          status: next.fixture.status,
-          homeTeam: next.teams.home,
-          awayTeam: next.teams.away,
-          goals: next.goals
-        };
-      }
+      if (next) return next;
     }
     return null;
   }
@@ -120,23 +134,23 @@ export async function fetchLastMatch(teamId: string): Promise<Fixture | null> {
       const seasonData = await fetchFromApi(`fixtures?team=${correctedTeamId}&season=${season}`);
       if (seasonData?.errors?.plan || !seasonData?.response) continue;
       
-      const fixtures = seasonData?.response || [];
+      const fixturesResponse: ApiFixture[] = seasonData?.response || [];
       const now = new Date().getTime();
+      const fixtures: Fixture[] = fixturesResponse.map((f) => ({
+        id: f.fixture.id,
+        date: f.fixture.date,
+        venue: f.fixture.venue,
+        status: f.fixture.status,
+        homeTeam: f.teams.home,
+        awayTeam: f.teams.away,
+        goals: f.goals
+      }));
+
       const last = fixtures
-        .filter((f: any) => new Date(f.fixture.date).getTime() < now)
-        .sort((a: any, b: any) => new Date(b.fixture.date).getTime() - new Date(a.fixture.date).getTime())[0];
+        .filter((f) => new Date(f.date).getTime() < now)
+        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0];
         
-      if (last) {
-        return {
-          id: last.fixture.id,
-          date: last.fixture.date,
-          venue: last.fixture.venue,
-          status: last.fixture.status,
-          homeTeam: last.teams.home,
-          awayTeam: last.teams.away,
-          goals: last.goals
-        };
-      }
+      if (last) return last;
     }
     return null;
   }
@@ -155,7 +169,7 @@ export async function fetchLastMatch(teamId: string): Promise<Fixture | null> {
 
 export async function fetchStandings(teamId: string): Promise<Standing | null> {
   const correctedTeamId = teamId === '33' ? '47' : teamId === '4944' ? '4899' : teamId;
-  const leagueId = correctedTeamId === '47' ? '39' : '44';
+  const leagueId = correctedTeamId === '47' ? '39' : '34';
   
   const seasons = ['2025', '2024'];
   for (const season of seasons) {
@@ -165,7 +179,7 @@ export async function fetchStandings(teamId: string): Promise<Standing | null> {
     const standings = data?.response?.[0]?.league?.standings?.[0];
     if (!standings) continue;
     
-    const teamStanding = standings.find((s: any) => s.team.id.toString() === correctedTeamId);
+    const teamStanding = standings.find((s: { team: { id: number } }) => s.team.id.toString() === correctedTeamId);
     if (teamStanding) return teamStanding;
   }
   

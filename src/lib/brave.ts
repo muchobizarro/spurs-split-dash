@@ -3,6 +3,7 @@ interface BraveResultItem {
   url: string;
   description: string;
   age: string;
+  page_age?: string;
   source?: string;
   meta_url?: { name: string };
 }
@@ -32,7 +33,7 @@ export async function fetchBraveNews(query: string = 'Tottenham Hotspur') {
     title: item.title,
     url: item.url,
     description: item.description,
-    published_time: item.age,
+    published_time: item.page_age || item.age,
     source: item.source || item.meta_url?.name || 'Brave News',
   }));
 }

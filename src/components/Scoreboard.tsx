@@ -21,7 +21,7 @@ export default function Scoreboard({ standing, theme }: Props) {
     );
   }
 
-  const formPips = standing.form.split('').map((result, i) => {
+  const formPips = (standing.form || '').replace(/[^WDL]/g, '').split('').map((result, i) => {
     let color = '';
     switch (result) {
       case 'W': color = 'bg-emerald-500'; break;

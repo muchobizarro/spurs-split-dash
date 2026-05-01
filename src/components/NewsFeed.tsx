@@ -18,18 +18,37 @@ interface Props {
 export default function NewsFeed({ news }: Props) {
   if (!news || !Array.isArray(news)) return null;
 
+  // Helper to parse both ISO strings and relative strings (e.g., "2 hours ago")
+  const parseDate = (dateStr: string) => {
+    const date = new Date(dateStr);
+    if (!isNaN(date.getTime())) return date;
+
+    // Handle relative dates
+    const now = new Date();
+    const match = dateStr.match(/(\d+)\s+(second|minute|hour|day|week|month|year)s?\s+ago/i);
+    if (match) {
+      const value = parseInt(match[1]);
+      const unit = match[2].toLowerCase();
+      
+      switch (unit) {
+        case 'second': now.setSeconds(now.getSeconds() - value); break;
+        case 'minute': now.setMinutes(now.getMinutes() - value); break;
+        case 'hour': now.setHours(now.getHours() - value); break;
+        case 'day': now.setDate(now.getDate() - value); break;
+        case 'week': now.setDate(now.getDate() - (value * 7)); break;
+        case 'month': now.setMonth(now.getMonth() - value); break;
+        case 'year': now.setFullYear(now.getFullYear() - value); break;
+      }
+      return now;
+    }
+
+    return new Date(0); // Fallback for unparseable
+  };
+
   // 1. Sort all news items by date (newest first)
   const sortedNews = [...news].sort((a, b) => {
-    const dateA = new Date(a.published_time).getTime();
-    const dateB = new Date(b.published_time).getTime();
-    
-    // Handle invalid dates by pushing them to the end
-    const isValidA = !isNaN(dateA);
-    const isValidB = !isNaN(dateB);
-    if (!isValidA && !isValidB) return 0;
-    if (!isValidA) return 1;
-    if (!isValidB) return -1;
-    
+    const dateA = parseDate(a.published_time).getTime();
+    const dateB = parseDate(b.published_time).getTime();
     return dateB - dateA;
   });
 
@@ -44,9 +63,8 @@ export default function NewsFeed({ news }: Props) {
     };
 
     items.forEach((item: NewsItem) => {
-      const time = item.published_time;
-      const pubDate = new Date(time);
-      const isValidDate = !isNaN(pubDate.getTime());
+      const pubDate = parseDate(item.published_time);
+      const isValidDate = pubDate.getTime() > 0;
       
       if (!isValidDate) {
         if (!groups.Recent) groups.Recent = [];

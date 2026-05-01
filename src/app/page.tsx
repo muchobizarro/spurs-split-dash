@@ -6,10 +6,12 @@ import { fetchBraveNews } from '@/lib/brave';
 import { fetchTeamStats } from '@/lib/rapidapi';
 import { AlertTriangle, Zap } from 'lucide-react';
 
+export const revalidate = 3600; // Revalidate page every hour
+
 export default async function DashboardPage() {
   // Fetch data with governance
-  const { data: menNews, isStale: isMenNewsStale } = await fetchWithGovernance('brave_news_men', () => fetchBraveNews('Tottenham Hotspur'));
-  const { data: womenNews, isStale: isWomenNewsStale } = await fetchWithGovernance('brave_news_women', () => fetchBraveNews('Tottenham Hotspur Women'));
+  const { data: menNews, isStale: isMenNewsStale } = await fetchWithGovernance('brave_news_men', () => fetchBraveNews('Tottenham Hotspur'), 'news');
+  const { data: womenNews, isStale: isWomenNewsStale } = await fetchWithGovernance('brave_news_women', () => fetchBraveNews('Tottenham Hotspur Women'), 'news');
   
   // Example Team IDs for Spurs Men (33) and Women (4944)
   const { data: menStats, isStale: isMenStale } = await fetchWithGovernance('men_stats', () => fetchTeamStats('33'));

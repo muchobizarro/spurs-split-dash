@@ -2,24 +2,27 @@ import { supabase } from './supabase';
 
 const DAILY_LIMIT = 95;
 
-interface CacheEntry {
-  key: string;
-  data: any;
-  updated_at: string;
-}
-
 interface UsageCounter {
   count: number;
   last_reset: string;
 }
 
-export async function fetchWithGovernance(
+export async function fetchWithGovernance<T>(
   key: string,
-  fetchFn: () => Promise<any>,
-  mode: 'live' | 'idle' = 'idle'
-) {
+  fetchFn: () => Promise<T>,
+  mode: 'live' | 'idle' | 'news' = 'idle',
+  customThresholdMs?: number
+): Promise<{ data: T | null; isStale: boolean }> {
   try {
-    const threshold = mode === 'live' ? 15 * 60 * 1000 : 12 * 60 * 60 * 1000;
+    // 0. Determine Threshold
+    // live: 15 mins (during matches)
+    // news: 3 hours (for fresh updates)
+    // idle: 12 hours (default for stats)
+    const threshold = customThresholdMs ?? (
+      mode === 'live' ? 15 * 60 * 1000 : 
+      mode === 'news' ? 3 * 60 * 60 * 1000 : 
+      12 * 60 * 60 * 1000
+    );
 
     // 1. Check Usage Limit
     const { data: usageData, error: usageError } = await supabase

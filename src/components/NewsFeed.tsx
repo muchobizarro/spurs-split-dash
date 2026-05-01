@@ -29,8 +29,8 @@ export default function NewsFeed({ news }: Props) {
       Recent: [],
     };
 
-    items.forEach((item: any) => {
-      const time = item.published_time || item.age;
+    items.forEach((item: NewsItem) => {
+      const time = item.published_time;
       const pubDate = new Date(time);
       const isValidDate = !isNaN(pubDate.getTime());
       
@@ -85,7 +85,7 @@ export default function NewsFeed({ news }: Props) {
                     <div className="flex items-center gap-1 text-[10px] opacity-50">
                       <Clock size={10} />
                       {(() => {
-                        const time = item.published_time || (item as any).age;
+                        const time = item.published_time;
                         const date = new Date(time);
                         return isNaN(date.getTime()) 
                           ? time 

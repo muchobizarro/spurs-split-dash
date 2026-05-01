@@ -1,3 +1,12 @@
+interface BraveResultItem {
+  title: string;
+  url: string;
+  description: string;
+  age: string;
+  source?: string;
+  meta_url?: { name: string };
+}
+
 export async function fetchBraveNews(query: string = 'Tottenham Hotspur') {
   const apiKey = process.env.BRAVE_API_KEY;
   if (!apiKey) return [];
@@ -19,7 +28,7 @@ export async function fetchBraveNews(query: string = 'Tottenham Hotspur') {
   }
 
   const data = await response.json();
-  return (data.results || []).map((item: any) => ({
+  return (data.results || []).map((item: BraveResultItem) => ({
     title: item.title,
     url: item.url,
     description: item.description,

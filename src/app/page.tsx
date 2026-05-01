@@ -110,13 +110,23 @@ export default async function DashboardPage() {
   const { data: womenStats, isStale: isWomenStale } = await fetchWithGovernance('women_stats_v5', () => fetchDirectStats(SPURS_WOMEN_ID));
 
   // 3. Fetch Matches
+  const liveStatuses = ['1H', 'HT', '2H', 'ET', 'P', 'BT', 'LIVE'];
+
   let { data: menMatch } = await fetchWithGovernance('men_match_v5', () => fetchDirectMatch(SPURS_MEN_ID, 'next'), 'news');
+  if (menMatch && liveStatuses.includes(menMatch.status.short)) {
+    ({ data: menMatch } = await fetchWithGovernance('men_match_v5', () => fetchDirectMatch(SPURS_MEN_ID, 'next'), 'live'));
+  }
+  
   if (!menMatch) {
     const res = await fetchWithGovernance('last_men_match_v5', () => fetchDirectMatch(SPURS_MEN_ID, 'last'), 'news');
     menMatch = res.data;
   }
 
   let { data: womenMatch } = await fetchWithGovernance('women_match_v5', () => fetchDirectMatch(SPURS_WOMEN_ID, 'next'), 'news');
+  if (womenMatch && liveStatuses.includes(womenMatch.status.short)) {
+    ({ data: womenMatch } = await fetchWithGovernance('women_match_v5', () => fetchDirectMatch(SPURS_WOMEN_ID, 'next'), 'live'));
+  }
+
   if (!womenMatch) {
     const res = await fetchWithGovernance('last_women_match_v5', () => fetchDirectMatch(SPURS_WOMEN_ID, 'last'), 'news');
     womenMatch = res.data;

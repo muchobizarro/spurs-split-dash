@@ -24,6 +24,12 @@ Initial plans often reference incorrect IDs. Use these verified values (Direct f
 - **Spurs Men:** Team ID `33`, Season ID `66441` (PL 25/26)
 - **Spurs Women:** Team ID `273547`, Season ID `71101` (WSL 25/26)
 
+### Database Configuration (CRITICAL)
+The Supabase `api_cache` table **must** have Row Level Security (RLS) disabled to allow the application to read/write without authentication. Run this in the Supabase SQL Editor:
+```sql
+ALTER TABLE api_cache DISABLE ROW LEVEL SECURITY;
+```
+
 ### API Plan Restrictions (API-Football)
 The Free plan has significant limitations that require manual workarounds:
 1. **Blocked Parameters:** The `next` and `last` fixture parameters are often blocked.

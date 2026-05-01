@@ -14,15 +14,15 @@ This project is a high-performance, dual-view dashboard for Tottenham Hotspur, p
 ## Critical Findings & Data IDs
 
 ### Correct Team & League IDs
-Initial plans often reference incorrect IDs. Use these verified values:
+Initial plans often reference incorrect IDs. Use these verified values (Direct from API):
 
 **API-Football (api-sports.io):**
 - **Spurs Men:** Team ID `47`, League ID `39` (Premier League)
-- **Spurs Women:** Team ID `4899`, League ID `38` (FA WSL)
+- **Spurs Women:** Team ID `4899`, League ID `44` (FA WSL)
 
 **SportAPI7 (RapidAPI / SofaScore):**
 - **Spurs Men:** Team ID `33`, Season ID `66441` (PL 25/26)
-- **Spurs Women:** Team ID `2599`, Season ID `71101` (WSL 25/26)
+- **Spurs Women:** Team ID `273547`, Season ID `71101` (WSL 25/26)
 
 ### API Plan Restrictions (API-Football)
 The Free plan has significant limitations that require manual workarounds:

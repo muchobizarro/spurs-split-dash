@@ -10,7 +10,16 @@ interface Props {
 }
 
 export default function NextMatch({ match, theme }: Props) {
-  if (!match) return null;
+  const accentColor = theme === 'dark' ? 'bg-white/10' : 'bg-[#132257]/5';
+  const mutedColor = theme === 'dark' ? 'text-white/40' : 'text-[#132257]/40';
+
+  if (!match) {
+    return (
+      <div className={`p-4 rounded-xl ${accentColor} border border-current/10 max-w-sm ml-auto flex items-center justify-center`}>
+        <span className={`text-[10px] font-bold uppercase tracking-widest ${mutedColor}`}>Match Data Unavailable</span>
+      </div>
+    );
+  }
 
   const isLive = ['1H', 'HT', '2H', 'ET', 'P', 'BT', 'LIVE'].includes(match.status.short);
   const isFinished = ['FT', 'AET', 'PEN'].includes(match.status.short);

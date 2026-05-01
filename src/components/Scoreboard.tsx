@@ -9,7 +9,17 @@ interface Props {
 }
 
 export default function Scoreboard({ standing, theme }: Props) {
-  if (!standing) return null;
+  const accentColor = theme === 'dark' ? 'text-white' : 'text-[#132257]';
+  const mutedColor = theme === 'dark' ? 'text-white/40' : 'text-[#132257]/40';
+  const bgColor = theme === 'dark' ? 'bg-white/5' : 'bg-[#132257]/5';
+
+  if (!standing) {
+    return (
+      <div className={`p-4 rounded-xl ${bgColor} border border-current/10 flex items-center justify-center`}>
+        <span className={`text-[10px] font-bold uppercase tracking-widest ${mutedColor}`}>League Data Unavailable</span>
+      </div>
+    );
+  }
 
   const formPips = standing.form.split('').map((result, i) => {
     let color = '';

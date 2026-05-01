@@ -2,10 +2,11 @@ import React from 'react';
 import NewsFeed from '@/components/NewsFeed';
 import DeepStats from '@/components/DeepStats';
 import NextMatch from '@/components/NextMatch';
+import Scoreboard from '@/components/Scoreboard';
 import { fetchWithGovernance } from '@/lib/governance';
 import { fetchBraveNews } from '@/lib/brave';
 import { fetchTeamStats } from '@/lib/rapidapi';
-import { fetchNextMatch } from '@/lib/football';
+import { fetchNextMatch, fetchLastMatch, fetchStandings } from '@/lib/football';
 import { AlertTriangle, Zap } from 'lucide-react';
 
 export const revalidate = 3600; // Revalidate page every hour
@@ -26,13 +27,27 @@ export default async function DashboardPage() {
   if (menMatch && liveStatuses.includes(menMatch.status.short)) {
     ({ data: menMatch, isStale: isMenMatchStale } = await fetchWithGovernance('men_match', () => fetchNextMatch('33'), 'live'));
   }
+  
+  if (!menMatch) {
+    const { data: lastMenMatch } = await fetchWithGovernance('last_men_match', () => fetchLastMatch('33'), 'news');
+    menMatch = lastMenMatch;
+  }
 
   let { data: womenMatch, isStale: isWomenMatchStale } = await fetchWithGovernance('women_match', () => fetchNextMatch('4944'), 'news');
   if (womenMatch && liveStatuses.includes(womenMatch.status.short)) {
     ({ data: womenMatch, isStale: isWomenMatchStale } = await fetchWithGovernance('women_match', () => fetchNextMatch('4944'), 'live'));
   }
 
-  const isDataSavingMode = isMenNewsStale || isWomenNewsStale || isMenStale || isWomenStale || isMenMatchStale || isWomenMatchStale;
+  if (!womenMatch) {
+    const { data: lastWomenMatch } = await fetchWithGovernance('last_women_match', () => fetchLastMatch('4944'), 'news');
+    womenMatch = lastWomenMatch;
+  }
+
+  // 4. Fetch Standings
+  const { data: menStanding, isStale: isMenStandingStale } = await fetchWithGovernance('men_standing', () => fetchStandings('33'), 'news');
+  const { data: womenStanding, isStale: isWomenStandingStale } = await fetchWithGovernance('women_standing', () => fetchStandings('4944'), 'news');
+
+  const isDataSavingMode = isMenNewsStale || isWomenNewsStale || isMenStale || isWomenStale || isMenMatchStale || isWomenMatchStale || isMenStandingStale || isWomenStandingStale;
 
   return (
     <main className="min-h-screen bg-black text-white font-sans">
@@ -60,6 +75,7 @@ export default async function DashboardPage() {
           </header>
 
           <div className="grid gap-12">
+            <Scoreboard standing={menStanding} theme="dark" />
             <DeepStats stats={menStats} title="Men's First Team" />
             <NewsFeed news={menNews} />
           </div>
@@ -80,6 +96,7 @@ export default async function DashboardPage() {
           </header>
 
           <div className="grid gap-12">
+            <Scoreboard standing={womenStanding} theme="light" />
             <DeepStats stats={womenStats} title="Women's Team" />
             <NewsFeed news={womenNews} />
           </div>

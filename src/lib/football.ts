@@ -26,13 +26,25 @@ export interface Fixture {
   };
 }
 
-export async function fetchNextMatch(teamId: string): Promise<Fixture | null> {
+export interface Standing {
+  rank: number;
+  points: number;
+  goalsDiff: number;
+  form: string;
+  status: string;
+  description: string;
+  team: {
+    id: number;
+    name: string;
+    logo: string;
+  };
+}
+
+async function fetchFromApi(endpoint: string) {
   const apiKey = process.env.API_FOOTBALL_KEY;
   if (!apiKey) return null;
 
-  // We fetch next 1 and last 1 to see if there's a live game or just the next one
-  // API-Football next=1 returns the next match that is NOT STARTED or LIVE
-  const url = `https://v3.football.api-sports.io/fixtures?team=${teamId}&next=1`;
+  const url = `https://v3.football.api-sports.io/${endpoint}`;
   
   try {
     const response = await fetch(url, {
@@ -47,22 +59,57 @@ export async function fetchNextMatch(teamId: string): Promise<Fixture | null> {
       return null;
     }
 
-    const data = await response.json();
-    const fixture = data.response?.[0];
-
-    if (!fixture) return null;
-
-    return {
-      id: fixture.fixture.id,
-      date: fixture.fixture.date,
-      venue: fixture.fixture.venue,
-      status: fixture.fixture.status,
-      homeTeam: fixture.teams.home,
-      awayTeam: fixture.teams.away,
-      goals: fixture.goals
-    };
+    return await response.json();
   } catch (error) {
     console.error('API-Football Error:', error);
     return null;
   }
+}
+
+export async function fetchNextMatch(teamId: string): Promise<Fixture | null> {
+  const data = await fetchFromApi(`fixtures?team=${teamId}&next=1`);
+  const fixture = data?.response?.[0];
+  if (!fixture) return null;
+
+  return {
+    id: fixture.fixture.id,
+    date: fixture.fixture.date,
+    venue: fixture.fixture.venue,
+    status: fixture.fixture.status,
+    homeTeam: fixture.teams.home,
+    awayTeam: fixture.teams.away,
+    goals: fixture.goals
+  };
+}
+
+export async function fetchLastMatch(teamId: string): Promise<Fixture | null> {
+  const data = await fetchFromApi(`fixtures?team=${teamId}&last=1`);
+  const fixture = data?.response?.[0];
+  if (!fixture) return null;
+
+  return {
+    id: fixture.fixture.id,
+    date: fixture.fixture.date,
+    venue: fixture.fixture.venue,
+    status: fixture.fixture.status,
+    homeTeam: fixture.teams.home,
+    awayTeam: fixture.teams.away,
+    goals: fixture.goals
+  };
+}
+
+export async function fetchStandings(teamId: string): Promise<Standing | null> {
+  // We need to fetch standings for the league the team is in.
+  // For Spurs Men (33), it's Premier League (39)
+  // For Spurs Women (4944), it's WSL (144)
+  const leagueId = teamId === '33' ? '39' : '144';
+  const season = '2025'; // Current season
+  
+  const data = await fetchFromApi(`standings?league=${leagueId}&season=${season}`);
+  const standings = data?.response?.[0]?.league?.standings?.[0];
+  
+  if (!standings) return null;
+  
+  const teamStanding = standings.find((s: { team: { id: number } }) => s.team.id.toString() === teamId);
+  return teamStanding || null;
 }

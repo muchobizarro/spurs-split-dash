@@ -26,7 +26,7 @@ export default function NextMatch({ match, theme }: Props) {
       <div className="flex justify-between items-start mb-3">
         <div className="flex items-center gap-1.5 uppercase text-[10px] font-black tracking-widest opacity-70">
           <Trophy size={12} />
-          {isLive ? 'Live Now' : isFinished ? 'Final Score' : 'Next Up'}
+          {isLive ? 'Live Now' : isFinished ? 'Last Result' : 'Next Up'}
         </div>
         {isLive && (
           <div className="flex items-center gap-1">

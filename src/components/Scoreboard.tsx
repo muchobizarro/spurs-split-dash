@@ -38,10 +38,6 @@ export default function Scoreboard({ standing, theme }: Props) {
     );
   });
 
-  const accentColor = theme === 'dark' ? 'text-white' : 'text-[#132257]';
-  const mutedColor = theme === 'dark' ? 'text-white/40' : 'text-[#132257]/40';
-  const bgColor = theme === 'dark' ? 'bg-white/5' : 'bg-[#132257]/5';
-
   return (
     <div className={`p-4 rounded-xl ${bgColor} border border-current/10 flex items-center justify-between gap-6`}>
       <div className="flex items-center gap-4">

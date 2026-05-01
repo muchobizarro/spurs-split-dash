@@ -28,8 +28,6 @@ export default function NextMatch({ match, theme }: Props) {
   const timeStr = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   const dateStr = date.toLocaleDateString([], { day: 'numeric', month: 'short' });
 
-  const accentColor = theme === 'dark' ? 'bg-white/10' : 'bg-[#132257]/5';
-
   return (
     <div className={`p-4 rounded-xl ${accentColor} border border-current/10 max-w-sm ml-auto`}>
       <div className="flex justify-between items-start mb-3">

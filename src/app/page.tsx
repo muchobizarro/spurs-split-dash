@@ -7,7 +7,7 @@ import { fetchWithGovernance } from '@/lib/governance';
 import { fetchBraveNews } from '@/lib/brave';
 import { AlertTriangle, Zap } from 'lucide-react';
 
-export const revalidate = 3600; // Revalidate page every hour
+export const revalidate = 0; // FORCE FRESH DATA FOR DEBUGGING
 
 // --- DIRECT FIX: Bypassing restricted football.ts and rapidapi.ts ---
 
@@ -101,25 +101,25 @@ export default async function DashboardPage() {
   const { data: womenNews, isStale: isWomenNewsStale } = await fetchWithGovernance('brave_news_women', () => fetchBraveNews('Tottenham Hotspur Women'), 'news');
   
   // 2. Fetch Stats
-  const { data: menStats, isStale: isMenStale } = await fetchWithGovernance('men_stats_v4', () => fetchDirectStats(SPURS_MEN_ID));
-  const { data: womenStats, isStale: isWomenStale } = await fetchWithGovernance('women_stats_v4', () => fetchDirectStats(SPURS_WOMEN_ID));
+  const { data: menStats, isStale: isMenStale } = await fetchWithGovernance('men_stats_v5', () => fetchDirectStats(SPURS_MEN_ID));
+  const { data: womenStats, isStale: isWomenStale } = await fetchWithGovernance('women_stats_v5', () => fetchDirectStats(SPURS_WOMEN_ID));
 
   // 3. Fetch Matches
-  let { data: menMatch } = await fetchWithGovernance('men_match_v4', () => fetchDirectMatch(SPURS_MEN_ID, 'next'), 'news');
+  let { data: menMatch } = await fetchWithGovernance('men_match_v5', () => fetchDirectMatch(SPURS_MEN_ID, 'next'), 'news');
   if (!menMatch) {
-    const res = await fetchWithGovernance('last_men_match_v4', () => fetchDirectMatch(SPURS_MEN_ID, 'last'), 'news');
+    const res = await fetchWithGovernance('last_men_match_v5', () => fetchDirectMatch(SPURS_MEN_ID, 'last'), 'news');
     menMatch = res.data;
   }
 
-  let { data: womenMatch } = await fetchWithGovernance('women_match_v4', () => fetchDirectMatch(SPURS_WOMEN_ID, 'next'), 'news');
+  let { data: womenMatch } = await fetchWithGovernance('women_match_v5', () => fetchDirectMatch(SPURS_WOMEN_ID, 'next'), 'news');
   if (!womenMatch) {
-    const res = await fetchWithGovernance('last_women_match_v4', () => fetchDirectMatch(SPURS_WOMEN_ID, 'last'), 'news');
+    const res = await fetchWithGovernance('last_women_match_v5', () => fetchDirectMatch(SPURS_WOMEN_ID, 'last'), 'news');
     womenMatch = res.data;
   }
 
   // 4. Fetch Standings
-  const { data: menStanding } = await fetchWithGovernance('men_standing_v4', () => fetchDirectStanding(SPURS_MEN_ID), 'news');
-  const { data: womenStanding } = await fetchWithGovernance('women_standing_v4', () => fetchDirectStanding(SPURS_WOMEN_ID), 'news');
+  const { data: menStanding } = await fetchWithGovernance('men_standing_v5', () => fetchDirectStanding(SPURS_MEN_ID), 'news');
+  const { data: womenStanding } = await fetchWithGovernance('women_standing_v5', () => fetchDirectStanding(SPURS_WOMEN_ID), 'news');
 
   const isDataSavingMode = isMenNewsStale || isWomenNewsStale || isMenStale || isWomenStale;
 

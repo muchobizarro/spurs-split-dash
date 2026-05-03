@@ -113,6 +113,7 @@ export async function fetchEspnStandings(teamId: string): Promise<Standing | nul
   if (!league || !espnTeamId) return null;
 
   try {
+    // 1. Fetch Standings
     const url = `https://site.api.espn.com/apis/v2/sports/soccer/${league}/standings`;
     const res = await fetch(url, { next: { revalidate: 3600 } });
     if (!res.ok) return null;
@@ -124,7 +125,40 @@ export async function fetchEspnStandings(teamId: string): Promise<Standing | nul
     const teamStanding = standings.find((s: any) => s.team.id === espnTeamId);
     if (!teamStanding) return null;
 
-    return mapEspnStandingToStanding(teamStanding);
+    const baseStanding = mapEspnStandingToStanding(teamStanding);
+
+    // 2. Try to get form from scoreboard
+    try {
+      const sbRes = await fetch(`${ESPN_BASE}/${league}/scoreboard`, { next: { revalidate: 300 } });
+      if (sbRes.ok) {
+        const sbData = await sbRes.json();
+        const competitor = sbData.events?.flatMap((e: any) => e.competitions[0].competitors)
+          .find((c: any) => c.team.id === espnTeamId);
+        if (competitor?.form) {
+          baseStanding.form = competitor.form;
+        } else {
+          // If not in today's scoreboard, try last match
+          const now = new Date();
+          const past = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000);
+          const dateStr = formatDateRange(past, now);
+          const pastSbRes = await fetch(`${ESPN_BASE}/${league}/scoreboard?dates=${dateStr}`, { next: { revalidate: 3600 } });
+          if (pastSbRes.ok) {
+            const pastSbData = await pastSbRes.json();
+            const lastCompetitor = pastSbData.events
+              ?.sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime())
+              .flatMap((e: any) => e.competitions[0].competitors)
+              .find((c: any) => c.team.id === espnTeamId);
+            if (lastCompetitor?.form) {
+              baseStanding.form = lastCompetitor.form;
+            }
+          }
+        }
+      }
+    } catch (sbError) {
+      console.warn('Failed to fetch form from scoreboard:', sbError);
+    }
+
+    return baseStanding;
   } catch (error) {
     console.error('ESPN Standings Error:', error);
     return null;

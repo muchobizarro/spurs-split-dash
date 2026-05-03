@@ -16,41 +16,41 @@ const SPURS_WOMEN_ID = '4899';
 
 export default async function DashboardPage() {
   // 1. Fetch News
-  const { data: menNews, isStale: isMenNewsStale } = await fetchWithGovernance('brave_news_men_v9', () => fetchBraveNews('Tottenham Hotspur'), 'news');
-  const { data: womenNews, isStale: isWomenNewsStale } = await fetchWithGovernance('brave_news_women_v9', () => fetchBraveNews('Tottenham Hotspur Women'), 'news');
+  const { data: menNews, isStale: isMenNewsStale } = await fetchWithGovernance('brave_news_men_v10', () => fetchBraveNews('Tottenham Hotspur'), 'news');
+  const { data: womenNews, isStale: isWomenNewsStale } = await fetchWithGovernance('brave_news_women_v10', () => fetchBraveNews('Tottenham Hotspur Women'), 'news');
   
   // 2. Fetch Stats
-  const { data: menStats, isStale: isMenStale } = await fetchWithGovernance('men_stats_v9', () => fetchTeamStats(SPURS_MEN_ID));
-  const { data: womenStats, isStale: isWomenStale } = await fetchWithGovernance('women_stats_v9', () => fetchTeamStats(SPURS_WOMEN_ID));
+  const { data: menStats, isStale: isMenStale } = await fetchWithGovernance('men_stats_v10', () => fetchTeamStats(SPURS_MEN_ID));
+  const { data: womenStats, isStale: isWomenStale } = await fetchWithGovernance('women_stats_v10', () => fetchTeamStats(SPURS_WOMEN_ID));
 
   // 3. Fetch Matches
   const liveStatuses = ['1H', 'HT', '2H', 'ET', 'P', 'BT', 'LIVE'];
 
-  let { data: menMatch, isStale: isMenMatchStale } = await fetchWithGovernance('men_match_v9', () => fetchNextMatch(SPURS_MEN_ID), 'news');
+  let { data: menMatch, isStale: isMenMatchStale } = await fetchWithGovernance('men_match_v10', () => fetchNextMatch(SPURS_MEN_ID), 'news');
   if (menMatch && liveStatuses.includes(menMatch.status.short)) {
-    ({ data: menMatch, isStale: isMenMatchStale } = await fetchWithGovernance('men_match_v9', () => fetchNextMatch(SPURS_MEN_ID), 'live'));
+    ({ data: menMatch, isStale: isMenMatchStale } = await fetchWithGovernance('men_match_v10', () => fetchNextMatch(SPURS_MEN_ID), 'live'));
   }
   
   if (!menMatch) {
-    const { data: lastMenMatch, isStale: isLastMenStale } = await fetchWithGovernance('last_men_match_v9', () => fetchLastMatch(SPURS_MEN_ID), 'news');
+    const { data: lastMenMatch, isStale: isLastMenStale } = await fetchWithGovernance('last_men_match_v10', () => fetchLastMatch(SPURS_MEN_ID), 'news');
     menMatch = lastMenMatch;
     isMenMatchStale = isLastMenStale;
   }
 
-  let { data: womenMatch, isStale: isWomenMatchStale } = await fetchWithGovernance('women_match_v9', () => fetchNextMatch(SPURS_WOMEN_ID), 'news');
+  let { data: womenMatch, isStale: isWomenMatchStale } = await fetchWithGovernance('women_match_v10', () => fetchNextMatch(SPURS_WOMEN_ID), 'news');
   if (womenMatch && liveStatuses.includes(womenMatch.status.short)) {
-    ({ data: womenMatch, isStale: isWomenMatchStale } = await fetchWithGovernance('women_match_v9', () => fetchNextMatch(SPURS_WOMEN_ID), 'live'));
+    ({ data: womenMatch, isStale: isWomenMatchStale } = await fetchWithGovernance('women_match_v10', () => fetchNextMatch(SPURS_WOMEN_ID), 'live'));
   }
 
   if (!womenMatch) {
-    const { data: lastWomenMatch, isStale: isLastWomenStale } = await fetchWithGovernance('last_women_match_v9', () => fetchLastMatch(SPURS_WOMEN_ID), 'news');
+    const { data: lastWomenMatch, isStale: isLastWomenStale } = await fetchWithGovernance('last_women_match_v10', () => fetchLastMatch(SPURS_WOMEN_ID), 'news');
     womenMatch = lastWomenMatch;
     isWomenMatchStale = isLastWomenStale;
   }
 
   // 4. Fetch Standings
-  const { data: menStanding, isStale: isMenStandingStale } = await fetchWithGovernance('men_standing_v9', () => fetchStandings(SPURS_MEN_ID), 'news');
-  const { data: womenStanding, isStale: isWomenStandingStale } = await fetchWithGovernance('women_standing_v9', () => fetchStandings(SPURS_WOMEN_ID), 'news');
+  const { data: menStanding, isStale: isMenStandingStale } = await fetchWithGovernance('men_standing_v10', () => fetchStandings(SPURS_MEN_ID), 'news');
+  const { data: womenStanding, isStale: isWomenStandingStale } = await fetchWithGovernance('women_standing_v10', () => fetchStandings(SPURS_WOMEN_ID), 'news');
 
   const isDataSavingMode = isMenNewsStale || isWomenNewsStale || isMenStale || isWomenStale || isMenMatchStale || isWomenMatchStale || isMenStandingStale || isWomenStandingStale;
 

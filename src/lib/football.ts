@@ -1,3 +1,5 @@
+import { fetchEspnNextMatch, fetchEspnLastMatch, fetchEspnStandings } from './espn';
+
 export interface Fixture {
   id: number;
   date: string;
@@ -83,6 +85,10 @@ export async function fetchNextMatch(teamId: string): Promise<Fixture | null> {
   const correctedTeamId = teamId === '33' || teamId === '47' ? '47' : 
                          teamId === '150' || teamId === '4899' || teamId === '4944' ? '4899' : teamId;
   
+  // Try ESPN first as it's more reliable for current/next matches on free tier
+  const espnMatch = await fetchEspnNextMatch(correctedTeamId);
+  if (espnMatch) return espnMatch;
+
   const data = await fetchFromApi(`fixtures?team=${correctedTeamId}&next=1`);
   
   if (!data?.response?.[0] || data?.errors?.plan) {
@@ -128,6 +134,10 @@ export async function fetchLastMatch(teamId: string): Promise<Fixture | null> {
   const correctedTeamId = teamId === '33' || teamId === '47' ? '47' : 
                          teamId === '150' || teamId === '4899' || teamId === '4944' ? '4899' : teamId;
   
+  // Try ESPN first
+  const espnMatch = await fetchEspnLastMatch(correctedTeamId);
+  if (espnMatch) return espnMatch;
+
   const data = await fetchFromApi(`fixtures?team=${correctedTeamId}&last=1`);
   
   if (!data?.response?.[0] || data?.errors?.plan) {
@@ -172,6 +182,11 @@ export async function fetchLastMatch(teamId: string): Promise<Fixture | null> {
 export async function fetchStandings(teamId: string): Promise<Standing | null> {
   const correctedTeamId = teamId === '33' || teamId === '47' ? '47' : 
                          teamId === '150' || teamId === '4899' || teamId === '4944' ? '4899' : teamId;
+  
+  // Try ESPN first
+  const espnStanding = await fetchEspnStandings(correctedTeamId);
+  if (espnStanding) return espnStanding;
+
   const leagueId = correctedTeamId === '47' ? '39' : '44';
   
   const seasons = ['2025', '2024', '2023'];

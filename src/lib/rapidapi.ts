@@ -2,13 +2,15 @@ export async function fetchTeamStats(teamId: string) {
   const apiKey = process.env.RAPID_API_KEY;
   if (!apiKey) return null;
 
-  // Map teamId to SportAPI7 specific IDs and seasons
-  // For Spurs Men (33 in SportAPI7, but maybe passed as 47 from API-Football)
+  // Map teamId to SportAPI7 specific IDs, Tournaments and seasons (Updated for 2026)
   const isMen = teamId === '33' || teamId === '47';
   const sportApiId = isMen ? '33' : '273547';
-  const seasonId = isMen ? '66441' : '71101';
+  const tournamentId = isMen ? '17' : '1044';
+  const seasonId = isMen ? '76986' : '79227';
 
-  const url = `https://sportapi7.p.rapidapi.com/api/v1/team/${sportApiId}/statistics/season/${seasonId}`;
+  // Correct SportAPI7 endpoint format
+  const url = `https://sportapi7.p.rapidapi.com/api/v1/team/${sportApiId}/unique-tournament/${tournamentId}/season/${seasonId}/statistics/overall`;
+  
   const options = {
     method: 'GET',
     headers: {
@@ -20,11 +22,21 @@ export async function fetchTeamStats(teamId: string) {
   try {
     const response = await fetch(url, options);
     if (!response.ok) {
-      console.warn(`RapidAPI responded with status: ${response.status}`);
+      console.warn(`RapidAPI responded with status: ${response.status} for team ${sportApiId}`);
       return null;
     }
     const data = await response.json();
-    return data.statistics || null;
+    
+    if (!data.statistics) return null;
+
+    // Map SofaScore statistics to the format expected by DeepStats component
+    return {
+      goalsScored: data.statistics.goalsScored,
+      goalsConceded: data.statistics.goalsConceded,
+      cleanSheets: data.statistics.cleanSheets,
+      avgBallPossession: data.statistics.averageBallPossession,
+      matchesPlayed: data.statistics.matchesPlayed
+    };
   } catch (error) {
     console.error('RapidAPI Error:', error);
     return null;

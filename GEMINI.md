@@ -21,8 +21,9 @@ Initial plans often reference incorrect IDs. Use these verified values (Direct f
 - **Spurs Women:** Team ID `4899`, League ID `44` (FA WSL)
 
 **SportAPI7 (RapidAPI / SofaScore):**
-- **Spurs Men:** Team ID `33`, Season ID `66441` (PL 25/26)
-- **Spurs Women:** Team ID `273547`, Season ID `71101` (WSL 25/26)
+- **Spurs Men:** Team ID `33`, Tournament ID `17`, Season ID `76986` (PL 25/26)
+- **Spurs Women:** Team ID `273547`, Tournament ID `1044`, Season ID `79227` (WSL 25/26)
+- **Endpoint:** `/api/v1/team/{team_id}/unique-tournament/{tournament_id}/season/{season_id}/statistics/overall`
 
 ### Database Configuration (CRITICAL)
 The Supabase `api_cache` table **must** have Row Level Security (RLS) disabled to allow the application to read/write without authentication. Run this in the Supabase SQL Editor:
